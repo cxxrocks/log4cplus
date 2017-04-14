@@ -97,6 +97,7 @@ ConsoleAppender::close()
 // ConsoleAppender protected methods
 //////////////////////////////////////////////////////////////////////////////
 
+
 void
 ConsoleAppender::append(const spi::InternalLoggingEvent& event)
 {

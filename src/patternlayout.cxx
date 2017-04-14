@@ -148,7 +148,9 @@ public:
                 FILE_CONVERTER,
                 LINE_CONVERTER,
                 FULL_LOCATION_CONVERTER,
-                FUNCTION_CONVERTER };
+                FUNCTION_CONVERTER,
+                COLOR_CONVERTER,
+                UNCOLOR_CONVERTER};
     BasicPatternConverter(const FormattingInfo& info, Type type);
     virtual void convert(tstring & result, 
         const spi::InternalLoggingEvent& event);
@@ -397,8 +399,6 @@ BasicPatternConverter::BasicPatternConverter(
 {
 }
 
-
-
 void
 BasicPatternConverter::convert(tstring & result,
     const spi::InternalLoggingEvent& event)
@@ -466,6 +466,29 @@ BasicPatternConverter::convert(tstring & result,
         
     case FUNCTION_CONVERTER:
         result = event.getFunction ();
+        return;
+    case COLOR_CONVERTER:
+        switch(event.getLogLevel())
+        {
+            case FATAL_LOG_LEVEL:
+                result = "\e[31m";
+                return;
+            case ERROR_LOG_LEVEL:
+                result = "\e[31m";
+                return;
+            case WARN_LOG_LEVEL:
+                result = "\e[33m";
+                return;
+            case INFO_LOG_LEVEL:
+                result = "\e[32m";
+                return;
+            case DEBUG_LOG_LEVEL:
+                result = "\e[37m";
+                return;
+        }
+        return;
+    case UNCOLOR_CONVERTER:
+        result = "\e[39m";
         return;
     }
 
@@ -992,6 +1015,20 @@ PatternParser::finalizeConverter(tchar c)
             //getLogLog().debug("MDC converter.");
             break;
 
+        case LOG4CPLUS_TEXT('y'):
+            pc = new BasicPatternConverter
+                    (formattingInfo,
+                     BasicPatternConverter::COLOR_CONVERTER);
+            //getLogLog().debug("COLOR converter.");
+            //formattingInfo.dump(getLogLog());
+            break;
+        case LOG4CPLUS_TEXT('z'):
+            pc = new BasicPatternConverter
+                    (formattingInfo,
+                     BasicPatternConverter::UNCOLOR_CONVERTER);
+            //getLogLog().debug("UNCOLOR converter.");
+            //formattingInfo.dump(getLogLog());
+            break;
         default:
             tostringstream buf;
             buf << LOG4CPLUS_TEXT("Unexpected char [")
